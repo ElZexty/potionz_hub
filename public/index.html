@@ -140,6 +140,12 @@
   .panel h2{margin:0;font-size:14px;letter-spacing:.12em;color:var(--bright)}
   .panel h2.gold{color:var(--accent)}
   .panel p{margin:0;color:var(--muted)}
+  .news-list{display:flex;flex-direction:column;gap:14px;margin-top:10px}
+  .news-list:empty{display:none}
+  .news-item{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:4px}
+  .news-item .news-date{font-size:11px;letter-spacing:.1em;color:var(--accent)}
+  .news-item .news-title{margin:0;font-size:13px;letter-spacing:.08em;color:var(--bright)}
+  .news-item p{white-space:pre-wrap;overflow-wrap:anywhere}
 
   /* free shipping promo */
   .promo{
@@ -341,6 +347,7 @@
       <section class="panel" id="viewNews">
         <h2>ANNOUNCEMENTS</h2>
         <p>digital gift cards for use online</p>
+        <div class="news-list" id="newsList"></div>
       </section>
 
       <!-- ORDERS -->
@@ -568,6 +575,37 @@
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
     renderGrid();
   });
+
+  // News: announcements posted from Telegram with /new_ann
+  async function loadNews() {
+    const box = $('newsList');
+    if (!box) return;
+    try {
+      const r = await fetch('/api/news', { credentials: 'same-origin', cache: 'no-store' });
+      if (!r.ok) return;
+      const d = await r.json();
+      box.textContent = '';
+      for (const a of d.announcements || []) {
+        const item = document.createElement('article');
+        item.className = 'news-item';
+        const date = document.createElement('div');
+        date.className = 'news-date';
+        date.textContent = new Date(a.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }).toUpperCase();
+        item.appendChild(date);
+        if (a.title) {
+          const h = document.createElement('h3');
+          h.className = 'news-title';
+          h.textContent = a.title;
+          item.appendChild(h);
+        }
+        const p = document.createElement('p');
+        p.textContent = a.text;
+        item.appendChild(p);
+        box.appendChild(item);
+      }
+    } catch (_) {}
+  }
+  loadNews();
 
   setView('news'); renderGrid(); renderCart();
 })();
