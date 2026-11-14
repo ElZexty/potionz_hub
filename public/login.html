@@ -11,6 +11,12 @@
 .panel{width:min(100%,460px);padding:36px;border:1px solid #6f32a0;background:var(--card);box-shadow:0 0 45px #b042ff29}
 h1{margin:0 0 8px;font-size:22px;letter-spacing:.16em;color:var(--accent)}p{color:var(--muted);font-size:13px;margin:0 0 22px}label{display:block;color:var(--muted);font-size:12px;margin-bottom:8px}
 input{width:100%;height:48px;padding:0 13px;background:var(--bg);border:1px solid var(--line);color:#f4eef7;font:inherit;letter-spacing:.08em}button{width:100%;height:48px;margin-top:14px;background:var(--accent);border:0;color:var(--bg);font:800 13px 'JetBrains Mono',monospace;letter-spacing:.12em;cursor:pointer}button:disabled{opacity:.6;cursor:wait}#status{min-height:22px;margin-top:12px;color:#ff9a9a;font-size:12px}
+.sys{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:8px;font-size:11px;letter-spacing:.12em;color:var(--muted)}
+.sys-row{display:flex;align-items:center;gap:10px}
+.sys-row b{margin-left:auto;font-weight:700;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:#6b5a7a;flex:none}
+.dot.ok{background:#4ade80;box-shadow:0 0 8px #4ade8099}.sys-row b.ok{color:#9fe3b1}
+.dot.bad{background:#ff6b6b;box-shadow:0 0 8px #ff6b6b99}.sys-row b.bad{color:#ff9a9a}
 </style>
 </head>
 <body>
@@ -19,8 +25,15 @@ input{width:100%;height:48px;padding:0 13px;background:var(--bg);border:1px soli
 <label for="licenseKey">LICENSE KEY</label>
 <input id="licenseKey" name="key" type="text" placeholder="PZ-XXXXXXXX-XXXXXXXX-XXXXXXXX" autocomplete="off" required maxlength="64" autofocus>
 <button id="submit" type="submit">UNLOCK SHOP</button><div id="status" role="status" aria-live="polite"></div>
+<div class="sys" aria-label="System status">
+<div class="sys-row"><span class="dot" id="botDot"></span>BOT<b id="botState">CHECKING…</b></div>
+<div class="sys-row"><span class="dot" id="keyDot"></span>LICENSE KEYS<b id="keyState">CHECKING…</b></div>
+</div>
 </form>
 <script>
+(()=>{const set=(dot,label,ok,good,bad)=>{const d=document.getElementById(dot),l=document.getElementById(label);d.className='dot '+(ok?'ok':'bad');l.className=ok?'ok':'bad';l.textContent=ok?good:bad;};
+const check=async()=>{try{const r=await fetch('/api/status',{cache:'no-store'});const s=await r.json();set('botDot','botState',s.bot==='online','ONLINE','OFFLINE');set('keyDot','keyState',s.keys==='ready','READY FOR USE','UNAVAILABLE');}catch(_){set('botDot','botState',false,'','OFFLINE');set('keyDot','keyState',false,'','UNAVAILABLE');}};
+check();setInterval(check,60000);})();
 (async()=>{try{const r=await fetch('/api/session',{credentials:'same-origin'});const d=await r.json();if(d.authenticated)location.replace('/');}catch(_){}})();
 document.getElementById('keyForm').addEventListener('submit',async e=>{e.preventDefault();const input=document.getElementById('licenseKey'),status=document.getElementById('status'),button=document.getElementById('submit');button.disabled=true;status.textContent='Checking key…';try{const r=await fetch('/api/redeem',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({key:input.value.trim()})});const d=await r.json();if(!r.ok)throw new Error(d.error||'Unable to verify key.');status.style.color='#9fe3b1';status.textContent='Access granted. Loading shop…';location.replace('/');}catch(err){status.style.color='#ff9a9a';status.textContent=err.message;button.disabled=false;}});
 </script>
