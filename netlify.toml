@@ -18,3 +18,8 @@
   from = "/api/redeem"
   to = "/.netlify/functions/redeem"
   status = 200
+
+[[redirects]]
+  from = "/api/setup"
+  to = "/.netlify/functions/setup"
+  status = 200
