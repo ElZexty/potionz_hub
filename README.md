@@ -32,6 +32,12 @@ curl -X POST "https://api.telegram.org/bot<NEW_BOT_TOKEN>/setWebhook" \
 
 Telegram should return `"ok":true`. Do not paste the token or secret into public source files, GitHub, or chat.
 
+## Use only this bot for keys
+Keys for this site come from the Telegram webhook above and are stored in Supabase.
+Keys from the separate Python bot (`python bot.py`, SQLite) will never work here,
+and running that Python bot removes this webhook. Stop it, then run the
+`setWebhook` command again.
+
 ## 5. Generate keys
 Open a private chat with your bot. Send `/start`, then:
 - `/genkey` — generate one key

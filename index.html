@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Potionz — Shop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  @keyframes rgbBorderFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Snow particle falling animation across the boxed area */
+  @keyframes snowfall {
+    0% { transform: translateY(-10px) translateX(0px); opacity: 0; }
+    15% { opacity: 0.9; }
+    85% { opacity: 0.9; }
+    100% { transform: translateY(100vh) translateX(25px); opacity: 0; }
+  }
+
+  .snow-particles-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .flake {
+    position: absolute;
+    background: #ffffff;
+    border-radius: 50%;
+    animation: snowfall linear infinite;
+  }
+
+  :root{
+    --accent: #b042ff; 
+    --bg: #090510; 
+    --side: #12091c; 
+    --line: #29183b; 
+    --line2: #1e112d;
+    --text: #d6ccdd; 
+    --bright: #f4eef7; 
+    --muted: #a79cb3; 
+    --dim: #8b7d9a; 
+    --card: #100818;
+    --rgb-gradient: linear-gradient(90deg, #b042ff, #da77ff, #7b2cbf, #b042ff);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:15px;line-height:1.6}
+  a{color:var(--accent)} a:hover{color:#d39eff}
+  button,input{font-family:inherit}
+  button{cursor:pointer}
+  svg.ic{width:18px;height:18px;fill:none;stroke:var(--accent);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+  .app{display:flex;flex-wrap:wrap;min-height:100vh}
+
+  /* sidebar */
+  .side{flex:1 1 260px;background:var(--side);border-right:1px solid #231233;display:flex;flex-direction:column;z-index:3;}
+  .brand{padding:24px 28px 20px;border-bottom:1px solid #231233}
+  .brand .drop{font-size:13px;letter-spacing:.18em;color:var(--accent);font-weight:700}
+  .brand .name{font-size:20px;font-weight:800;letter-spacing:.06em;color:var(--bright)}
+  .side nav{display:flex;flex-direction:column;padding:20px 12px 24px}
+  .sec{padding:24px 16px 8px;font-size:12px;letter-spacing:.2em;color:var(--dim)}
+  .sec:first-child{padding-top:8px}
+
+  .nav-item{
+    display:flex;align-items:center;gap:14px;min-height:46px;padding:0 16px;margin:2px 0;
+    background:transparent;color:var(--text);border:1px solid transparent;border-radius:4px;
+    font-size:15px;text-align:left;text-decoration:none;width:100%;transition:all .2s;
+  }
+  .nav-item:hover{background:#1b0f2a;color:var(--bright)}
+  
+  .nav-item.active{
+    background:#160d24;
+    color:var(--bright);
+    border:1px solid transparent;
+    background-image: linear-gradient(#160d24, #160d24), var(--rgb-gradient);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    background-size: 300% 300%;
+    animation: rgbBorderFlow 5s linear infinite;
+    box-shadow: 0 0 12px rgba(176, 66, 255, 0.2);
+  }
+  .nav-item .lbl{flex:1}
+  .nav-item .cnt{font-size:12px;color:var(--dim)}
+
+  /* content */
+  .content{flex:999 1 560px;min-width:0;position:relative;display:flex;flex-direction:column;z-index:2;}
+  .top{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:12px 32px;min-height:84px;padding:12px 40px;border-bottom:1px solid var(--line2);background:var(--bg);position:relative;z-index:3;}
+  
+  .cart-btn{
+    display:flex;align-items:center;gap:10px;min-height:44px;padding:0 16px;background:var(--bg);color:var(--bright);
+    border:1px solid #3f255c;border-radius:3px;font-size:16px;font-weight:800;transition:all .2s;
+  }
+  .cart-btn:hover{
+    border:1px solid transparent;
+    background-image: linear-gradient(var(--bg), var(--bg)), var(--rgb-gradient);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    background-size: 300% 300%;
+    animation: rgbBorderFlow 4s linear infinite;
+    box-shadow: 0 0 12px rgba(176, 66, 255, 0.3);
+  }
+  .cart-btn .n{font-weight:500;color:var(--muted)}
+  .link-btn{min-height:44px;padding:0 4px;background:none;border:none;color:var(--muted);font-size:16px}
+  .link-btn:hover{color:var(--bright)}
+
+  /* Web background lines */
+  .web{position:absolute;right:0;pointer-events:none;z-index:0;}
+  .web g{fill:none;stroke:#4d2275;stroke-width:1.2}
+
+  main{width:100%;max-width:1180px;padding:48px 40px 64px;margin:0 auto;display:flex;flex-direction:column;gap:32px;position:relative;z-index:2;}
+  .title-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-start;gap:20px}
+  h1{margin:0;font-size:24px;letter-spacing:.24em;color:var(--accent);font-weight:800}
+  .sub{margin:6px 0 0;color:var(--muted);max-width:760px}
+  
+  .ghost-btn{
+    display:flex;align-items:center;gap:8px;min-height:44px;padding:0 16px;background:none;color:var(--text);
+    border:1px solid #3f255c;border-radius:3px;font-size:14px;transition:all .2s;
+  }
+  .ghost-btn:hover{
+    border:1px solid transparent;
+    background-image: linear-gradient(var(--bg), var(--bg)), var(--rgb-gradient);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    background-size: 300% 300%;
+    animation: rgbBorderFlow 4s linear infinite;
+  }
+  .ghost-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+  .panel{border:1px solid var(--line);padding:24px;display:flex;flex-direction:column;gap:8px}
+  .panel h2{margin:0;font-size:14px;letter-spacing:.12em;color:var(--bright)}
+  .panel h2.gold{color:var(--accent)}
+  .panel p{margin:0;color:var(--muted)}
+
+  /* free shipping promo */
+  .promo{
+    display:flex;flex-wrap:wrap;gap:24px;padding:36px;border:1px solid var(--line);
+    border-image: var(--rgb-gradient) 1;
+    background:#0d0714;
+  }
+  .promo .icon{flex:none;width:60px;height:60px;display:flex;align-items:center;justify-content:center;border:1px solid var(--accent);background:#1a0b29}
+  .promo .icon svg{width:30px;height:30px}
+  .promo .body{flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:14px}
+  .promo .head{font-weight:800;letter-spacing:.14em;color:var(--bright)}
+  .promo p{margin:0;color:var(--muted)}
+  .promo strong{color:var(--accent)}
+
+  /* products */
+  .grid-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+  .grid-head h2{margin:0;font-size:15px;letter-spacing:.14em;color:var(--accent)}
+  .grid-head span{font-size:13px;color:var(--dim)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:20px;margin-top:18px}
+  
+  .card{
+    display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);
+    border-radius:4px;transition:all .3s ease;
+  }
+  .card:hover{
+    border:1px solid transparent;
+    background-image: linear-gradient(var(--card), var(--card)), var(--rgb-gradient);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    background-size: 300% 300%;
+    animation: rgbBorderFlow 4s linear infinite;
+    box-shadow: 0 6px 20px rgba(176, 66, 255, 0.2);
+  }
+  
+  .card .img{position:relative;aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;background:#11081a;border-bottom:1px solid var(--line)}
+  .card .img svg{width:78%;height:auto}
+  .tag{position:absolute;top:12px;left:12px;padding:2px 8px;font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--accent);border:1px solid var(--accent);background:var(--bg)}
+  .card .info{display:flex;flex-direction:column;gap:12px;padding:16px}
+  .card .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card h3{margin:0;font-size:15px;font-weight:700;color:var(--bright)}
+  .card .price{font-weight:800;color:var(--accent)}
+  .card .blurb{margin:0;font-size:13px;color:#a0958a}
+  .sizes{display:flex;flex-wrap:wrap;gap:6px}
+  .size{min-width:44px;min-height:44px;padding:0 6px;background:transparent;color:#cfc7bb;border:1px solid #3f255c;border-radius:3px;font-size:13px;font-weight:700}
+  .size:hover{border-color:var(--accent)}
+  .size[aria-pressed="true"]{background:var(--accent);color:#111;border-color:var(--accent)}
+  
+  .add{
+    min-height:46px;background:transparent;color:var(--accent);border:1px solid var(--accent);
+    border-radius:3px;font-size:13px;font-weight:800;letter-spacing:.12em;transition:all .2s;
+  }
+  .add:hover,.add.added{
+    border:1px solid transparent;
+    background-image: var(--rgb-gradient);
+    background-size: 300% 300%;
+    animation: rgbBorderFlow 3s linear infinite;
+    color:#111;
+  }
+
+  .solid-btn{min-height:46px;padding:0 20px;background:var(--accent);color:#111;border:none;border-radius:3px;font-weight:800;letter-spacing:.1em}
+  .empty{border:1px solid var(--line);padding:56px 32px;display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center}
+  .empty .h{font-weight:800;letter-spacing:.14em;color:var(--bright)}
+  .empty p{margin:0;color:var(--muted)}
+  .form{border:1px solid var(--line);padding:40px 32px;display:flex;flex-direction:column;gap:20px;max-width:460px}
+  .form .h{font-weight:800;letter-spacing:.14em;color:var(--bright)}
+  .form label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)}
+  .form input{min-height:44px;padding:0 12px;background:var(--card);color:var(--bright);border:1px solid #3f255c;border-radius:3px;font-size:15px}
+  .form input:focus{outline:none;border-color:var(--accent)}
+
+  footer{padding-top:24px;border-top:1px solid var(--line2);display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;font-size:13px;color:var(--dim)}
+
+  /* cart drawer */
+  .drawer{
+    position:absolute;top:92px;right:24px;z-index:20;width:380px;max-width:calc(100% - 48px);padding:24px;
+    background:var(--card);
+    border:1px solid transparent;
+    background-image: linear-gradient(var(--card), var(--card)), var(--rgb-gradient);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    background-size: 300% 300%;
+    animation: rgbBorderFlow 6s linear infinite;
+    box-shadow: 0 24px 60px rgba(0,0,0,.8);display:none;flex-direction:column;gap:16px;
+    border-radius: 6px;
+  }
+  .drawer.open{display:flex}
+  .drawer .hd{display:flex;justify-content:space-between;align-items:center}
+  .drawer .hd div{font-weight:800;letter-spacing:.16em;color:var(--accent)}
+  .sq-btn{width:44px;height:44px;display:flex;align-items:center;justify-content:center;background:none;border:1px solid var(--line);color:var(--text);font-size:16px}
+  .sq-btn:hover{border-color:var(--accent)}
+  .sq-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+  .line{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line2)}
+  .swatch{flex:none;width:40px;height:40px;border:1px solid #3f255c}
+  .line .meta{flex:1;min-width:0;display:flex;flex-direction:column}
+  .line .meta span:first-child{font-size:14px;color:var(--bright)}
+  .line .meta span:last-child{font-size:12px;color:var(--dim)}
+  .qty{display:flex;align-items:center;gap:4px}
+  .qty span{min-width:20px;text-align:center;font-size:14px}
+  .sum{display:flex;justify-content:space-between;font-size:14px}
+  .sum span:first-child{color:var(--muted)}
+  .sum span:last-child{color:var(--bright)}
+  .note{margin:0;font-size:13px;color:#a0958a}
+
+  [hidden]{display:none !important}
+
+  @media (max-width:640px){
+    .top{padding:12px 20px}
+    main{padding:32px 20px 48px}
+    .promo{padding:24px}
+    .web{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="shopApp">
+
+  <!-- SIDEBAR -->
+  <aside class="side">
+    <div class="brand">
+      <div class="drop">POTIONZ</div>
+      <div class="name">CC's</div>
+    </div>
+    <nav aria-label="Shop">
+      <div class="sec">SHOP</div>
+      <div id="shopNav"></div>
+
+      <div class="sec">ANNOUNCEMENTS</div>
+      <button class="nav-item" data-main="news" type="button">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h8M8 17h4"/></svg>
+        <span class="lbl">News</span>
+      </button>
+
+      <div class="sec">PERSONAL</div>
+      <button class="nav-item" data-main="cart" type="button">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M3 4h2l2.4 11.2a1 1 0 001 .8h9.2a1 1 0 001-.8L20 8H6.2M9 20a1 1 0 100-2 1 1 0 000 2zM17 20a1 1 0 100-2 1 1 0 000 2z"/></svg>
+        <span class="lbl">Cart</span><span class="cnt" id="navCartCount"></span>
+      </button>
+      <button class="nav-item" data-main="orders" type="button">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6"/></svg>
+        <span class="lbl">Orders</span>
+      </button>
+      <a class="nav-item" href="https://t.me/+_gxNJ5718vg3ZjA5" target="_blank" rel="noopener">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+        <span class="lbl">Telegram</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <!-- Falling snow particles overlaying the entire boxed content area -->
+    <div class="snow-particles-container">
+      <div class="flake" style="width: 2px; height: 2px; left: 15%; animation-duration: 4.2s; animation-delay: 0s;"></div>
+      <div class="flake" style="width: 3px; height: 3px; left: 30%; animation-duration: 5.5s; animation-delay: 1.2s;"></div>
+      <div class="flake" style="width: 1.5px; height: 1.5px; left: 45%; animation-duration: 3.8s; animation-delay: 2.4s;"></div>
+      <div class="flake" style="width: 2.5px; height: 2.5px; left: 60%; animation-duration: 4.9s; animation-delay: 0.6s;"></div>
+      <div class="flake" style="width: 2px; height: 2px; left: 75%; animation-duration: 6.1s; animation-delay: 1.8s;"></div>
+      <div class="flake" style="width: 3px; height: 3px; left: 88%; animation-duration: 4.0s; animation-delay: 0.3s;"></div>
+      <div class="flake" style="width: 1.5px; height: 1.5px; left: 95%; animation-duration: 5.2s; animation-delay: 2.1s;"></div>
+      <div class="flake" style="width: 2px; height: 2px; left: 25%; animation-duration: 4.7s; animation-delay: 3.0s;"></div>
+      <div class="flake" style="width: 2.5px; height: 2.5px; left: 50%; animation-duration: 3.5s; animation-delay: 1.5s;"></div>
+      <div class="flake" style="width: 3px; height: 3px; left: 80%; animation-duration: 5.8s; animation-delay: 2.7s;"></div>
+    </div>
+
+    <header class="top">
+      <button class="cart-btn" id="cartBtn" type="button" aria-label="Open cart">
+        <svg class="ic" viewBox="0 0 24 24" style="stroke-width:1.8"><path d="M3 4h2l2.4 11.2a1 1 0 001 .8h9.2a1 1 0 001-.8L20 8H6.2M9 20a1 1 0 100-2 1 1 0 000 2zM17 20a1 1 0 100-2 1 1 0 000 2z"/></svg>
+        <span id="topTotal">$0.00</span> <span class="n">(<span id="topCount">0</span>)</span>
+      </button>
+      <button class="link-btn" data-main="orders" type="button">orders</button>
+    </header>
+
+    <svg class="web" viewBox="0 0 260 180" aria-hidden="true" style="top:85px;width:260px;height:180px">
+      <g>
+        <path d="M260 0 L110 180"/><path d="M260 0 L30 60"/><path d="M260 0 L200 180"/><path d="M260 0 L0 6"/>
+        <path d="M150 3 Q175 30 162 37 Q190 60 196 78"/><path d="M70 5 Q120 40 112 49 Q160 100 162 120"/><path d="M210 2 Q220 15 218 22 Q228 34 230 40"/>
+      </g>
+    </svg>
+    <svg class="web" viewBox="0 0 260 200" aria-hidden="true" style="bottom:0;width:260px;height:200px">
+      <g>
+        <path d="M260 200 L40 0"/><path d="M260 200 L150 0"/><path d="M260 200 L0 120"/>
+        <path d="M160 110 Q170 150 196 142 Q200 170 210 175"/><path d="M90 50 Q120 120 160 108 Q170 160 190 170"/>
+      </g>
+    </svg>
+
+    <main id="shop">
+      <div class="title-row">
+        <div>
+          <h1 id="pageTitle">POTIONZ DIGITAL CARDS</h1>
+          <p class="sub">Choose a card amount and add it to your cart.</p>
+        </div>
+        <button class="ghost-btn" id="shuffleBtn" type="button">
+          <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7"/></svg>
+          Shuffle
+        </button>
+      </div>
+
+      <!-- ANNOUNCEMENTS / NEWS -->
+      <section class="panel" id="viewNews">
+        <h2>ANNOUNCEMENTS</h2>
+        <p>digital gift cards for use online</p>
+      </section>
+
+      <!-- ORDERS -->
+      <section class="empty" id="viewOrders" hidden>
+        <div class="h">NO ORDERS YET</div>
+        <p>previous orders will show here, you may download a .txt file with your purchased product</p>
+        <button class="solid-btn" data-go="shop" type="button" style="margin-top:8px">BROWSE THE DROP</button>
+      </section>
+
+      <!-- SHOP -->
+      <div id="viewShop" style="display:flex;flex-direction:column;gap:32px">
+        <section class="promo">
+          <div class="icon"><svg class="ic" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg></div>
+          <div class="body">
+            <div class="head">POTIONS VIP</div>
+            <p>Orders over <strong>$25.00</strong> Access to Private Spammer, Account Logs for Food & Movies, Premium Drops & More.</p>
+          </div>
+        </section>
+
+        <section id="products">
+          <div class="grid-head"><h2 id="filterLabel">CARDS</h2><span id="itemCount">8 items</span></div>
+          <div class="grid" id="grid"></div>
+        </section>
+      </div>
+
+      <footer>
+        <span>© 2026 Potionz</span>
+        <span>@PotionMakersSupport - For Questions</span>
+      </footer>
+    </main>
+
+    <!-- CART DRAWER -->
+    <aside class="drawer" id="drawer" aria-label="Cart">
+      <div class="hd">
+        <div>YOUR CART</div>
+        <button class="sq-btn" id="closeCart" type="button" aria-label="Close cart"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+      </div>
+      <p class="note" id="cartEmpty">Your cart is empty. Pick a size and hit add to cart.</p>
+      <div id="lines" style="display:flex;flex-direction:column;gap:12px"></div>
+      <div class="sum"><span>Subtotal</span><span id="subTotal" style="font-weight:700">$0.00</span></div>
+      <div class="sum"><span>Shipping</span><span id="shipText">—</span></div>
+      <button class="solid-btn" id="checkoutBtn" type="button" style="min-height:48px;letter-spacing:.14em">CHECKOUT</button>
+      <p class="note" id="checkoutNote" hidden>Demo only: connect a payment provider to take real orders.</p>
+    </aside>
+  </div>
+</div>
+
+
+<script>
+(function () {
+  const FREE = 75;
+
+  const PRODUCTS = [
+    { id: 'gift', name: 'Potionz Card (VISA + FRESH!) (HIGH HIT RATE!!)', cat: 'giftcard', price: 2.50, color: '#12091c', stroke: '#b042ff', card: true, amounts: [2.50, 5.00, 10.00], tag: 'FRESH! (HIGHEST SELL RATE!)', blurb: 'Digital Gift Card' },
+    { id: 'gift15', name: 'Potionz Gift Card (VISA + MC) · $15', cat: 'giftcard', price: 15.00, color: '#20102d', stroke: '#da77ff', card: true, amounts: [15.00], tag: 'POPULAR', blurb: 'A $15 digital Potionz gift card' },
+    { id: 'gift25', name: 'Potionz Gift Card (VISA + MC) (SUPER HIT RATE!) + HIGH $$ · $25', cat: 'giftcard', price: 25.00, color: '#17152d', stroke: '#8b7dff', card: true, amounts: [25.00], tag: 'VALUE', blurb: 'A $25 digital Potionz gift card' },
+    { id: 'gift50', name: 'Potionz Gift Card (VISA + MC) (ULTRA FRESH 100% HIT RATE!!) + HIGH $$ · $50', cat: 'giftcard', price: 50.00, color: '#10251f', stroke: '#69d6a5', card: true, amounts: [50.00], tag: 'PREMIUM', blurb: 'A $50 digital Potionz gift card' }
+  ];
+
+  const FILTERS = [
+    { id: 'giftcard', label: 'Cards', title: 'Cards_', icon: 'M3 6h18v12H3zM3 10h18M7 15h4' }
+  ];
+
+  function optInfo(p) {
+    if (p.card) {
+      const sel = state.sizes[p.id] || String(p.amounts[0]);
+      return { opts: p.amounts.map(String), sel, price: Number(sel), label: '$' + Number(sel).toFixed(2), show: o => '$' + Number(o).toFixed(2), group: 'Amount' };
+    }
+    const sel = state.sizes[p.id] || 'M';
+    return { opts: SIZES, sel, price: p.price, label: sel, show: o => o, group: 'Size' };
+  }
+
+  const byId = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
+  const state = { filter: 'all', view: 'news', sizes: {}, cart: loadCart(), order: PRODUCTS.map(p => p.id) };
+  const $ = id => document.getElementById(id);
+  const money = n => '$' + n.toFixed(2);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  function loadCart() {
+    try { return JSON.parse(localStorage.getItem('potionz_cart')) || []; } catch (e) { return []; }
+  }
+  function saveCart() {
+    try { localStorage.setItem('potionz_cart', JSON.stringify(state.cart)); } catch (e) {}
+  }
+
+  function renderNav() {
+    $('shopNav').innerHTML = FILTERS.map(f => {
+      const count = f.id === 'all' ? PRODUCTS.length : PRODUCTS.filter(p => p.cat === f.id).length;
+      const active = state.view === 'shop' && state.filter === f.id ? ' active' : '';
+      return `<button class="nav-item${active}" type="button" data-filter="${f.id}">
+        <svg class="ic" viewBox="0 0 24 24"><path d="${f.icon}"/></svg>
+        <span class="lbl">${f.label}</span><span class="cnt">${count}</span></button>`;
+    }).join('');
+    document.querySelectorAll('[data-main]').forEach(b => {
+      if (!b.classList.contains('nav-item')) return;
+      const m = b.dataset.main;
+      b.classList.toggle('active', m === 'cart' ? $('drawer').classList.contains('open') : state.view === m);
+    });
+  }
+
+  function cardSVG(p, amount) {
+    return `<svg viewBox="0 0 200 200" role="img" aria-label="Potionz gift card illustration">
+      <defs><clipPath id="clip-${p.id}"><rect x="11" y="43" width="178" height="114" rx="9"/></clipPath></defs>
+      <rect x="10" y="42" width="180" height="116" rx="10" fill="${p.color}"/>
+      <g fill="none" stroke="#4d2d6b" stroke-width="1" clip-path="url(#clip-${p.id})">
+        <path d="M190 42 L120 158"/><path d="M190 42 L60 158"/><path d="M190 42 L10 128"/>
+        <path d="M150 42 Q160 70 155 80 Q175 90 190 92"/>
+      </g>
+      <rect x="10" y="42" width="180" height="116" rx="10" fill="none" stroke="${p.stroke}" stroke-width="2"/>
+      <text x="26" y="64" fill="#b042ff" font-family="JetBrains Mono, monospace" font-size="10" font-weight="800" letter-spacing="2">POTIONZ</text>
+      <path d="M172 52 l9 5.2 v10.4 l-9 5.2 l-9 -5.2 v-10.4z" fill="#190d26" stroke="#b042ff" stroke-width="1.5" stroke-linejoin="round"/>
+      <circle cx="172" cy="62.6" r="2" fill="#b042ff"/>
+      <rect x="26" y="78" width="30" height="23" rx="3" fill="#b042ff"/>
+      <path d="M26 89.5h30M41 78v23M33 78v6M49 78v6M33 101v-6M49 101v-6" fill="none" stroke="#5c208a" stroke-width="1"/>
+      <path d="M66 83a9 9 0 010 13M71 79a15 15 0 010 21" fill="none" stroke="#b042ff" stroke-width="1.6" stroke-linecap="round"/>
+      <text x="26" y="124" fill="#e8d8f0" font-family="JetBrains Mono, monospace" font-size="11" textLength="134" lengthAdjust="spacingAndGlyphs">•••• •••• •••• PTNZ</text>
+      <text x="26" y="146" fill="#8b7d9a" font-family="JetBrains Mono, monospace" font-size="8" letter-spacing="2">CARD</text>
+      <text x="176" y="148" text-anchor="end" fill="#b042ff" font-family="JetBrains Mono, monospace" font-size="20" font-weight="800">$${amount}</text>
+    </svg>`;
+  }
+
+
+  function renderGrid() {
+    const list = state.order.map(id => byId[id]).filter(p => state.filter === 'all' || p.cat === state.filter);
+    const f = FILTERS.find(x => x.id === state.filter);
+    $('filterLabel').textContent = f.title;
+    $('itemCount').textContent = list.length + (list.length === 1 ? ' item' : ' items');
+    $('grid').innerHTML = list.map(p => {
+      const o = optInfo(p);
+      return `<article class="card">
+        <div class="img">${p.tag ? `<span class="tag">${esc(p.tag)}</span>` : ''}${cardSVG(p, o.sel)}</div>
+        <div class="info">
+          <div class="row"><h3>${esc(p.name)}</h3><span class="price">${money(o.price)}</span></div>
+          <p class="blurb">${esc(p.blurb)}</p>
+          <div class="sizes" role="group" aria-label="${o.group}">
+            ${o.opts.map(s => `<button class="size" type="button" data-id="${p.id}" data-size="${s}" aria-pressed="${s === o.sel}">${o.show(s)}</button>`).join('')}
+          </div>
+          <button class="add" type="button" data-add="${p.id}">ADD TO CART · ${o.label}</button>
+        </div>
+      </article>`;
+    }).join('');
+  }
+
+  function renderCart() {
+    state.cart = state.cart.filter(l => byId[l.id]);
+    const subtotal = state.cart.reduce((a, l) => a + linePrice(l) * l.qty, 0);
+    const count = state.cart.reduce((a, l) => a + l.qty, 0);
+
+    $('topTotal').textContent = money(subtotal);
+    $('topCount').textContent = count;
+    $('navCartCount').textContent = count ? count : '';
+
+    $('cartEmpty').hidden = state.cart.length > 0;
+    $('lines').innerHTML = state.cart.map(l => {
+      const p = byId[l.id];
+      return `<div class="line">
+        <div class="swatch" style="background:${p.color}"></div>
+        <div class="meta"><span>${esc(p.name)}</span><span>${l.card ? 'Amount' : 'Size'} ${esc(l.size)} · ${money(linePrice(l) * l.qty)}</span></div>
+        <div class="qty">
+          <button class="sq-btn" type="button" data-dec="${l.key}" aria-label="Remove one">−</button>
+          <span>${l.qty}</span>
+          <button class="sq-btn" type="button" data-inc="${l.key}" aria-label="Add one">+</button>
+        </div>
+      </div>`;
+    }).join('');
+    $('subTotal').textContent = money(subtotal);
+    $('shipText').textContent = count === 0 ? '—' : 'Calculated at checkout';
+    saveCart();
+  }
+
+  function setView(v) {
+    state.view = v;
+    $('viewNews').hidden = v !== 'news';
+    $('viewShop').hidden = v !== 'shop';
+    $('viewOrders').hidden = v !== 'orders';
+    $('pageTitle').textContent = v === 'news' ? 'NEWS' : v === 'orders' ? 'ORDERS' : 'POTIONZ CARDS';
+    renderNav();
+  }
+
+  function toggleCart(force) {
+    const d = $('drawer');
+    const open = typeof force === 'boolean' ? force : !d.classList.contains('open');
+    d.classList.toggle('open', open);
+    $('checkoutNote').hidden = true;
+    renderNav();
+  }
+
+  function addToCart(id, btn) {
+    const p = byId[id];
+    const o = optInfo(p);
+    const key = id + '-' + o.sel;
+    const line = state.cart.find(l => l.key === key);
+    if (line) line.qty++;
+    else state.cart.push({ key, id, size: o.label, price: o.price, card: !!p.card, qty: 1 });
+    renderCart(); renderNav();
+    btn.textContent = 'ADDED ✓';
+    btn.classList.add('added');
+    setTimeout(() => { btn.textContent = 'ADD TO CART · ' + o.label; btn.classList.remove('added'); }, 1200);
+  }
+
+  const linePrice = l => (typeof l.price === 'number' ? l.price : byId[l.id].price);
+
+  function changeQty(key, d) {
+    state.cart = state.cart.map(l => l.key === key ? { ...l, qty: l.qty + d } : l).filter(l => l.qty > 0);
+    $('checkoutNote').hidden = true;
+    renderCart(); renderNav();
+  }
+
+  document.addEventListener('click', e => {
+    const t = e.target.closest('button');
+    if (!t) return;
+    if (t.dataset.filter) { state.filter = t.dataset.filter; setView('shop'); renderGrid(); }
+    else if (t.dataset.main) { t.dataset.main === 'cart' ? toggleCart() : setView(t.dataset.main); }
+    else if (t.dataset.go) { setView(t.dataset.go); }
+    else if (t.dataset.size) { state.sizes[t.dataset.id] = t.dataset.size; renderGrid(); }
+    else if (t.dataset.add) { addToCart(t.dataset.add, t); }
+    else if (t.dataset.inc) { changeQty(t.dataset.inc, 1); }
+    else if (t.dataset.dec) { changeQty(t.dataset.dec, -1); }
+  });
+  $('cartBtn').addEventListener('click', () => toggleCart());
+  $('closeCart').addEventListener('click', () => toggleCart(false));
+  $('checkoutBtn').addEventListener('click', () => { $('checkoutNote').hidden = false; });
+  $('shuffleBtn').addEventListener('click', () => {
+    const a = state.order;
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    renderGrid();
+  });
+
+  setView('news'); renderGrid(); renderCart();
+})();
+</script>
+</body>
+</html>
