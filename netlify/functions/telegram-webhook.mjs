@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { keyStore, newsStore, listNews, sha256, botToken, adminIds, webhookSecret } from './_shared.mjs';
+import { keyStore, newsStore, listNews, getApiSwitch, setApiSwitch, sha256, botToken, adminIds, webhookSecret } from './_shared.mjs';
 
 const part = () => crypto.randomBytes(4).toString('hex').toUpperCase();
 const makeKey = () => `PZ-${part()}-${part()}-${part()}`;
@@ -39,7 +39,7 @@ export default async (req) => {
 
     if (/^\/(start|help)(?:@\w+)?$/.test(command)) {
       await sendMessage(msg.chat.id,
-        'Potionz key manager\n\n/genkey — create one key\n/genkey 5 — create five keys (1–25)\n/keys — show key totals\n\n/new_ann TEXT — post an announcement to News\n   (put a title on the first line and the message on the next lines)\n/anns — list announcements\n/del_ann [N] — delete announcement N (default: newest)\n\n/myid — show your Telegram ID');
+        'Potionz key manager\n\n/genkey — create one key\n/genkey 5 — create five keys (1–25)\n/keys — show key totals\n\n/new_ann TEXT — post an announcement to News\n   (put a title on the first line and the message on the next lines)\n/anns — list announcements\n/del_ann [N] — delete announcement N (default: newest)\n\n/api_on — show API ONLINE on the login page\n/api_off — show API OFFLINE on the login page\n/api_status — check the switch\n\n/myid — show your Telegram ID');
       return ok();
     }
     if (/^\/myid(?:@\w+)?$/.test(command)) {
@@ -56,6 +56,17 @@ export default async (req) => {
       await Promise.all(keys.map(k => store.setJSON(sha256(k), { created_at, created_by: fromId, redeemed_at: null })));
       await sendMessage(msg.chat.id,
         `Created ${count} one-time key(s):\n\n${keys.join('\n')}\n\nCopy these now; only hashes are stored.`);
+      return ok();
+    }
+
+    const sw = command.match(/^\/api_(on|off|status)(?:@\w+)?$/);
+    if (sw) {
+      if (sw[1] !== 'status') await setApiSwitch(sw[1] === 'on', fromId);
+      const { online, changed_at } = await getApiSwitch();
+      const when = changed_at ? `\nLast changed: ${new Date(changed_at).toUTCString()}` : '';
+      await sendMessage(msg.chat.id, online
+        ? `🟢 API is ON. The login page shows API — ONLINE.${when}\nTurn it off with /api_off`
+        : `🔴 API is OFF. The login page shows API — OFFLINE.${when}\nTurn it on with /api_on`);
       return ok();
     }
 

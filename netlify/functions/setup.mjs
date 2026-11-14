@@ -34,6 +34,9 @@ export default async (req) => {
     { command: 'new_ann', description: 'Post an announcement to News' },
     { command: 'anns', description: 'List announcements' },
     { command: 'del_ann', description: 'Delete an announcement (e.g. /del_ann 2)' },
+    { command: 'api_on', description: 'Show API ONLINE on the login page' },
+    { command: 'api_off', description: 'Show API OFFLINE on the login page' },
+    { command: 'api_status', description: 'Check the API switch' },
     { command: 'myid', description: 'Show your Telegram ID' }
   ] });
 

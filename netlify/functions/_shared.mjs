@@ -5,6 +5,16 @@ import crypto from 'node:crypto';
 export const keyStore = () => getStore({ name: 'potionz-keys', consistency: 'strong' });
 // Announcements shown under News on the website (added with /new_ann in Telegram).
 export const newsStore = () => getStore({ name: 'potionz-news', consistency: 'strong' });
+// Site settings, e.g. the API on/off switch controlled with /api_on and /api_off.
+export const settingsStore = () => getStore({ name: 'potionz-settings', consistency: 'strong' });
+
+export async function getApiSwitch() {
+  const v = await settingsStore().get('api', { type: 'json' });
+  return { online: v?.online === true, changed_at: v?.changed_at || null };
+}
+export async function setApiSwitch(online, by) {
+  await settingsStore().setJSON('api', { online, changed_at: new Date().toISOString(), changed_by: by });
+}
 
 // Returns announcements newest first: [{ id, title, text, created_at }].
 export async function listNews() {

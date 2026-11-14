@@ -1,7 +1,8 @@
-import { keyStore, botToken, json } from './_shared.mjs';
+import { keyStore, getApiSwitch, botToken, json } from './_shared.mjs';
 
 // GET /api/status — public, shown on the login page.
-// bot:  "online" when the Telegram bot token works and the bot is connected to this site's webhook.
+// bot:  "online" when you've turned the API on with /api_on AND the Telegram bot token works
+//       and the bot is connected to this site's webhook.
 // keys: "ready" when the key storage can be reached, so keys can be checked.
 export default async () => {
   const status = { bot: 'offline', keys: 'unavailable', checked_at: new Date().toISOString() };
@@ -12,17 +13,19 @@ export default async () => {
     return r.json();
   };
 
-  const [bot, keys] = await Promise.allSettled([
+  const [bot, keys, sw] = await Promise.allSettled([
     token ? Promise.all([tg('getMe'), tg('getWebhookInfo')]) : Promise.reject(new Error('no token')),
-    keyStore().get('__health_check__')
+    keyStore().get('__health_check__'),
+    getApiSwitch()
   ]);
+  const switchedOn = sw.status === 'fulfilled' && sw.value.online;
 
   if (bot.status === 'fulfilled') {
     const [me, hook] = bot.value;
     const url = hook?.result?.url || '';
     const lastError = hook?.result?.last_error_date || 0;
     const recentError = lastError && Date.now() / 1000 - lastError < 600 && (hook.result.pending_update_count || 0) > 0;
-    if (me?.ok && url.endsWith('/.netlify/functions/telegram-webhook') && !recentError) status.bot = 'online';
+    if (switchedOn && me?.ok && url.endsWith('/.netlify/functions/telegram-webhook') && !recentError) status.bot = 'online';
   }
   if (keys.status === 'fulfilled') status.keys = 'ready';
 
