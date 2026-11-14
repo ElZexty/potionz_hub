@@ -27,5 +27,15 @@ export default async (req) => {
     allowed_updates: ['message'],
     drop_pending_updates: true
   });
+  // Show the commands in Telegram's "/" menu.
+  await call('setMyCommands', { commands: [
+    { command: 'genkey', description: 'Create one-time keys (e.g. /genkey 5)' },
+    { command: 'keys', description: 'Show key totals' },
+    { command: 'new_ann', description: 'Post an announcement to News' },
+    { command: 'anns', description: 'List announcements' },
+    { command: 'del_ann', description: 'Delete an announcement (e.g. /del_ann 2)' },
+    { command: 'myid', description: 'Show your Telegram ID' }
+  ] });
+
   return json(hook.ok ? 200 : 500, { ok: hook.ok, bot: '@' + me.result.username, webhook: webhookUrl, telegram: hook.description });
 };

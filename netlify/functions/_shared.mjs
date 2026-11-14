@@ -3,6 +3,19 @@ import crypto from 'node:crypto';
 
 // Keys live in Netlify Blobs (built into Netlify, no external database needed).
 export const keyStore = () => getStore({ name: 'potionz-keys', consistency: 'strong' });
+// Announcements shown under News on the website (added with /new_ann in Telegram).
+export const newsStore = () => getStore({ name: 'potionz-news', consistency: 'strong' });
+
+// Returns announcements newest first: [{ id, title, text, created_at }].
+export async function listNews() {
+  const store = newsStore();
+  const { blobs } = await store.list();
+  const items = await Promise.all(blobs.map(async b => {
+    const a = await store.get(b.key, { type: 'json' });
+    return a ? { id: b.key, ...a } : null;
+  }));
+  return items.filter(Boolean).sort((x, y) => String(y.created_at).localeCompare(String(x.created_at)));
+}
 
 export const COOKIE_NAME = 'potionz_session';
 export const SESSION_DAYS = 30;
