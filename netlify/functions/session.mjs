@@ -1,6 +1,6 @@
-import { validSession, json } from './_shared.mjs';
-export default async function handler(event) {
-  if (event.httpMethod !== 'GET') return json(405, { error: 'Method not allowed.' }, { Allow: 'GET' });
-  try { return json(200, { authenticated: await validSession(event) }); }
-  catch (e) { console.error(e); return json(500, { authenticated: false, error: 'Authentication service unavailable.' }); }
-}
+import { verifySession, getCookie, json, COOKIE_NAME } from './_shared.mjs';
+
+export default async (req) => {
+  if (req.method !== 'GET') return json(405, { error: 'Method not allowed.' }, { Allow: 'GET' });
+  return json(200, { authenticated: verifySession(getCookie(req, COOKIE_NAME)) });
+};
